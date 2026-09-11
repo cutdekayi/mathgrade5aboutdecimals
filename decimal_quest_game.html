@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Decimal Quest / Petualangan Desimal</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&display=swap');
+
+:root{
+  --teal-deep:#0B4F4A;
+  --teal-mid:#147069;
+  --paper:#FFF8EC;
+  --gold:#F2C14E;
+  --coral:#F2664B;
+  --leaf:#59B98A;
+  --ink:#163832;
+  --ink-soft:#3D5C56;
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:'Nunito', ui-rounded, "Segoe UI", Arial, sans-serif;
+  min-height:100vh;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(255,255,255,0.06) 0, transparent 45%),
+    radial-gradient(circle at 85% 80%, rgba(255,255,255,0.05) 0, transparent 40%),
+    linear-gradient(160deg, var(--teal-deep) 0%, var(--teal-mid) 60%, #0E5A54 100%);
+  color:var(--ink);
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  padding:28px 14px 60px;
+  position:relative;
+  overflow-x:hidden;
+}
+
+/* faint dotted trail pattern in the background, evoking a map path */
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  background-image: radial-gradient(rgba(255,255,255,0.14) 1.5px, transparent 1.5px);
+  background-size: 26px 26px;
+  pointer-events:none;
+  z-index:0;
+}
+
+.stage{
+  position:relative;
+  z-index:1;
+  width:100%;
+  max-width:720px;
+}
+
+h1,h2,h3{
+  font-family:'Baloo 2', 'Nunito', sans-serif;
+  margin:0;
+  color:var(--ink);
+}
+
+.card{
+  background:var(--paper);
+  border-radius:28px;
+  border:4px solid var(--gold);
+  box-shadow: 0 18px 0 rgba(6,40,37,0.28), 0 24px 40px rgba(6,40,37,0.35);
+  padding:28px 26px 24px;
+  position:relative;
+}
+
+/* ---------- top gem trail ---------- */
+.trail{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin:0 auto 18px;
+  max-width:720px;
+  padding:0 4px;
+}
+.trail .seg{
+  flex:1;
+  height:4px;
+  background:rgba(255,255,255,0.25);
+  border-radius:2px;
+  margin:0 2px;
+}
+.trail .seg.done{background:var(--gold);}
+.gem{
+  width:30px;height:30px;
+  flex:0 0 auto;
+  border-radius:8px;
+  background:rgba(255,255,255,0.18);
+  border:2px solid rgba(255,255,255,0.35);
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;
+  color:#fff;
+  transform:rotate(45deg);
+  transition:all .3s ease;
+}
+.gem span{transform:rotate(-45deg);font-family:'Baloo 2';font-weight:700;}
+.gem.done{background:var(--gold);border-color:var(--gold);box-shadow:0 0 0 4px rgba(242,193,78,0.25);}
+.gem.current{background:var(--coral);border-color:var(--coral);box-shadow:0 0 0 4px rgba(242,102,75,0.3);}
+
+/* ---------- header ---------- */
+.title-row{
+  text-align:center;
+  color:var(--paper);
+  margin-bottom:16px;
+}
+.title-row h1{
+  font-size:30px;
+  color:#fff;
+  text-shadow:0 3px 0 rgba(0,0,0,0.15);
+  line-height:1.15;
+}
+.title-row .sub{
+  font-size:15px;
+  color:rgba(255,255,255,0.85);
+  font-weight:700;
+  margin-top:4px;
+}
+
+/* ---------- badges / labels ---------- */
+.badge{
+  display:inline-block;
+  background:var(--leaf);
+  color:#fff;
+  font-family:'Baloo 2';
+  font-weight:700;
+  font-size:13px;
+  padding:6px 14px;
+  border-radius:999px;
+  margin-bottom:12px;
+}
+.badge.coral{background:var(--coral);}
+.badge.gold{background:var(--gold); color:var(--ink);}
+
+/* ---------- language pair blocks ---------- */
+.pair{margin-bottom:14px;}
+.pair .en{
+  font-weight:700;
+  font-size:18px;
+  color:var(--ink);
+  line-height:1.4;
+}
+.pair .id{
+  font-size:15px;
+  color:var(--ink-soft);
+  line-height:1.4;
+  margin-top:3px;
+}
+.pair.small .en{font-size:15px;font-weight:600;}
+.pair.small .id{font-size:13.5px;}
+
+/* ---------- buttons ---------- */
+.btn{
+  font-family:'Baloo 2';
+  font-weight:700;
+  font-size:17px;
+  border:none;
+  border-radius:16px;
+  padding:14px 22px;
+  cursor:pointer;
+  color:#fff;
+  background:var(--coral);
+  box-shadow:0 6px 0 #C6472F;
+  transition:transform .08s ease, box-shadow .08s ease;
+}
+.btn:hover{filter:brightness(1.04);}
+.btn:active{transform:translateY(4px); box-shadow:0 2px 0 #C6472F;}
+.btn.block{width:100%; text-align:center;}
+.btn.secondary{
+  background:var(--teal-mid);
+  box-shadow:0 6px 0 #0B4A45;
+}
+.btn.secondary:active{box-shadow:0 2px 0 #0B4A45;}
+.btn:disabled{opacity:.6; cursor:default;}
+
+.center{text-align:center;}
+
+/* ---------- options ---------- */
+.options{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-top:16px;
+}
+@media (max-width:520px){
+  .options{grid-template-columns:1fr;}
+}
+.opt{
+  font-family:'Nunito';
+  font-weight:800;
+  font-size:16px;
+  text-align:left;
+  padding:14px 16px;
+  border-radius:14px;
+  border:3px solid #E4D9BF;
+  background:#fff;
+  color:var(--ink);
+  cursor:pointer;
+  transition:transform .08s ease, border-color .12s ease, background .12s ease;
+}
+.opt:hover:not(:disabled){border-color:var(--gold); transform:translateY(-2px);}
+.opt:disabled{cursor:default;}
+.opt .letter{
+  display:inline-block;
+  width:24px;height:24px;
+  line-height:24px;
+  text-align:center;
+  border-radius:6px;
+  background:#EFE7D3;
+  color:var(--ink-soft);
+  font-size:13px;
+  margin-right:8px;
+  font-family:'Baloo 2';
+}
+.opt.correct{background:#DFF5E6; border-color:var(--leaf); color:#1B5E3A;}
+.opt.correct .letter{background:var(--leaf); color:#fff;}
+.opt.wrong{background:#FCE3DE; border-color:var(--coral); color:#8C2E1D;}
+.opt.wrong .letter{background:var(--coral); color:#fff;}
+
+/* ---------- feedback banner ---------- */
+.feedback{
+  margin-top:16px;
+  padding:14px 16px;
+  border-radius:16px;
+  display:none;
+}
+.feedback.show{display:block;}
+.feedback.ok{background:#E4F7EA; border:2px dashed var(--leaf);}
+.feedback.no{background:#FDEAE6; border:2px dashed var(--coral);}
+.feedback .headline{
+  font-family:'Baloo 2';
+  font-weight:700;
+  font-size:18px;
+  margin-bottom:4px;
+}
+.feedback.ok .headline{color:#1B5E3A;}
+.feedback.no .headline{color:#8C2E1D;}
+.feedback .why{font-size:14px; color:var(--ink-soft); line-height:1.5;}
+
+/* ---------- footer status ---------- */
+.status-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-top:18px;
+  font-family:'Baloo 2';
+  font-weight:700;
+  font-size:14px;
+  color:var(--ink-soft);
+}
+.status-row .chip{
+  background:#F1E9D3;
+  padding:6px 12px;
+  border-radius:999px;
+}
+.streak-note{
+  text-align:center;
+  color:var(--coral);
+  font-family:'Baloo 2';
+  font-weight:700;
+  font-size:14px;
+  margin-top:10px;
+  min-height:18px;
+}
+
+/* ---------- start screen visuals ---------- */
+.hero{
+  font-size:56px;
+  text-align:center;
+  margin-bottom:6px;
+}
+.howto{
+  background:#F6EFDC;
+  border-radius:16px;
+  padding:14px 16px;
+  margin:16px 0;
+}
+.howto li{margin-bottom:8px; line-height:1.4;}
+.howto .en{font-weight:700;}
+.howto .id{color:var(--ink-soft); font-size:13.5px;}
+
+/* ---------- end screen ---------- */
+.stars{
+  font-size:42px;
+  text-align:center;
+  margin:10px 0 4px;
+  letter-spacing:6px;
+}
+.score-big{
+  text-align:center;
+  font-family:'Baloo 2';
+  font-weight:800;
+  font-size:44px;
+  color:var(--coral);
+  margin:6px 0 2px;
+}
+
+/* ---------- confetti ---------- */
+.confetti-piece{
+  position:fixed;
+  top:-20px;
+  width:10px;height:14px;
+  z-index:50;
+  border-radius:2px;
+  pointer-events:none;
+  animation:fall linear forwards;
+}
+@keyframes fall{
+  to{ transform:translateY(110vh) rotate(360deg); opacity:0.9; }
+}
+
+.hidden{display:none !important;}
+
+.progress-note{
+  text-align:center;
+  font-size:13px;
+  color:rgba(255,255,255,0.8);
+  margin-top:8px;
+  font-weight:700;
+}
+</style>
+</head>
+<body>
+
+<div class="stage">
+
+  <div class="title-row">
+    <h1>🗺️ Decimal Quest — Petualangan Desimal</h1>
+    <div class="sub">A treasure hunt through fractions, place value &amp; rounding<br>Perburuan harta karun lewat pecahan, nilai tempat &amp; pembulatan</div>
+  </div>
+
+  <div class="trail" id="trail"></div>
+
+  <!-- START SCREEN -->
+  <div class="card" id="screen-start">
+    <div class="hero">💎🧭💰</div>
+    <div class="pair" style="text-align:center;">
+      <div class="en">Welcome, explorer! There are 8 map sections and 40 clues (questions) between you and the treasure.</div>
+      <div class="id">Selamat datang, penjelajah! Ada 8 bagian peta dan 40 petunjuk (soal) sebelum kamu sampai ke harta karun.</div>
+    </div>
+
+    <div class="howto">
+      <ul style="padding-left:18px; margin:0;">
+        <li><div class="en">Before every new map section, read the short tip card.</div><div class="id">Sebelum bagian peta baru, baca dulu kartu penjelasan singkatnya.</div></li>
+        <li><div class="en">Pick one answer for each question — there's no time limit.</div><div class="id">Pilih satu jawaban untuk setiap soal — tidak ada batas waktu.</div></li>
+        <li><div class="en">Every answer, right or wrong, comes with a quick explanation.</div><div class="id">Setiap jawaban, benar atau salah, akan disertai penjelasan singkat.</div></li>
+        <li><div class="en">Collect gems for every section you finish and see your stars at the end!</div><div class="id">Kumpulkan permata di setiap bagian yang selesai dan lihat bintangmu di akhir!</div></li>
+      </ul>
+    </div>
+
+    <button class="btn block" id="btn-start">Start the Quest 🚀 / Mulai Petualangan</button>
+  </div>
+
+  <!-- SECTION INTRO SCREEN -->
+  <div class="card hidden" id="screen-intro">
+    <div class="badge coral" id="intro-badge">Section</div>
+    <div class="pair">
+      <div class="en" id="intro-title-en"></div>
+      <div class="id" id="intro-title-id"></div>
+    </div>
+    <div class="howto">
+      <div class="pair small">
+        <div class="en" id="intro-body-en"></div>
+        <div class="id" id="intro-body-id"></div>
+      </div>
+    </div>
+    <button class="btn block" id="btn-continue">Let's go! / Ayo lanjut!</button>
+  </div>
+
+  <!-- QUESTION SCREEN -->
+  <div class="card hidden" id="screen-question">
+    <div class="badge gold" id="q-section-label">Section</div>
+    <div class="pair">
+      <div class="en" id="q-text-en"></div>
+      <div class="id" id="q-text-id"></div>
+    </div>
+
+    <div class="options" id="q-options"></div>
+
+    <div class="feedback" id="q-feedback">
+      <div class="headline" id="fb-headline"></div>
+      <div class="why" id="fb-why-en"></div>
+      <div class="why" id="fb-why-id" style="margin-top:4px;"></div>
+    </div>
+
+    <div class="streak-note" id="streak-note"></div>
+
+    <div class="status-row">
+      <div class="chip" id="status-progress">Question 1/40</div>
+      <div class="chip" id="status-score">⭐ 0</div>
+    </div>
+
+    <div class="center" style="margin-top:14px;">
+      <button class="btn hidden" id="btn-next">Next Clue ➜ / Petunjuk Berikutnya</button>
+    </div>
+  </div>
+
+  <!-- END SCREEN -->
+  <div class="card hidden" id="screen-end">
+    <div class="hero" id="end-emoji">🏆</div>
+    <h2 style="text-align:center;">Quest Complete! / Petualangan Selesai!</h2>
+    <div class="stars" id="end-stars"></div>
+    <div class="score-big" id="end-score"></div>
+    <div class="pair" style="text-align:center;">
+      <div class="en" id="end-msg-en"></div>
+      <div class="id" id="end-msg-id"></div>
+    </div>
+    <div class="center" style="margin-top:18px;">
+      <button class="btn block" id="btn-replay">Play Again 🔁 / Main Lagi</button>
+    </div>
+  </div>
+
+  <div class="progress-note" id="progress-note"></div>
+</div>
+
+<script>
+/* ===================== DATA ===================== */
+const sections = [
+  {
+    title_en: "Section 1: Fractions and Decimals",
+    title_id: "Bagian 1: Pecahan dan Desimal",
+    before_en: "A decimal is another way to write a fraction based on powers of 10. Tenths use a denominator of 10, hundredths use 100, and thousandths use 1,000. Use the place value to move between the two forms.",
+    before_id: "Desimal adalah cara lain untuk menulis pecahan berdasarkan pangkat 10. Persepuluhan memakai penyebut 10, perseratusan memakai 100, dan perseribuan memakai 1.000. Gunakan nilai tempat untuk berpindah antara kedua bentuk ini.",
+    questions: [
+      {en:"Write 7/10 as a decimal.", id:"Tulis 7/10 sebagai desimal.", opts:["0.7","0.07","7.0","0.17"], correct:0,
+       wEn:"Seven tenths is 0.7 because the 7 is in the tenths place.", wId:"Tujuh persepuluhan adalah 0,7 karena angka 7 berada di tempat persepuluhan."},
+      {en:"Write 43/100 as a decimal.", id:"Tulis 43/100 sebagai desimal.", opts:["0.43","4.3","0.043","43.0"], correct:0,
+       wEn:"Forty-three hundredths is written 0.43.", wId:"Empat puluh tiga perseratusan ditulis 0,43."},
+      {en:"Write 0.6 as a fraction in simplest form.", id:"Tulis 0,6 sebagai pecahan paling sederhana.", opts:["3/5","6/10","1/2","2/5"], correct:0,
+       wEn:"0.6 = 6/10. Divide numerator and denominator by 2 to get 3/5.", wId:"0,6 = 6/10. Bagi pembilang dan penyebut dengan 2 untuk mendapatkan 3/5."},
+      {en:"Write 0.125 as a fraction in simplest form.", id:"Tulis 0,125 sebagai pecahan paling sederhana.", opts:["1/8","1/4","125/1000","1/5"], correct:0,
+       wEn:"0.125 = 125/1,000. Divide both by 125 to get 1/8.", wId:"0,125 = 125/1.000. Bagi keduanya dengan 125 untuk mendapatkan 1/8."},
+      {en:"A square is divided into 100 equal parts. 35 parts are shaded. What decimal represents the shaded part?", id:"Sebuah persegi dibagi menjadi 100 bagian sama besar. 35 bagian diarsir. Desimal apa yang menunjukkan bagian yang diarsir?", opts:["0.35","3.5","0.035","35.0"], correct:0,
+       wEn:"35 out of 100 shaded parts means 35 hundredths, or 0.35.", wId:"35 dari 100 bagian yang diarsir berarti 35 perseratusan, atau 0,35."}
+    ]
+  },
+  {
+    title_en: "Section 2: Fractions, Decimals & Percents",
+    title_id: "Bagian 2: Pecahan, Desimal, dan Persen",
+    before_en: "Fractions, decimals, and percents can describe the same amount. A percent means 'out of 100.' To change a decimal to a percent, multiply by 100. To change a percent to a decimal, divide by 100.",
+    before_id: "Pecahan, desimal, dan persen bisa menggambarkan jumlah yang sama. Persen artinya 'per seratus'. Untuk mengubah desimal menjadi persen, kalikan dengan 100. Untuk mengubah persen menjadi desimal, bagi dengan 100.",
+    questions: [
+      {en:"Convert 3/4 to a decimal.", id:"Ubah 3/4 menjadi desimal.", opts:["0.75","0.34","0.43","3.4"], correct:0,
+       wEn:"3/4 = 75/100 = 0.75.", wId:"3/4 = 75/100 = 0,75."},
+      {en:"Convert 0.28 to a percent.", id:"Ubah 0,28 menjadi persen.", opts:["28%","2.8%","280%","0.28%"], correct:0,
+       wEn:"0.28 × 100 = 28%.", wId:"0,28 × 100 = 28%."},
+      {en:"Convert 65% to a decimal.", id:"Ubah 65% menjadi desimal.", opts:["0.65","6.5","0.065","65.0"], correct:0,
+       wEn:"65% means 65/100, which is 0.65.", wId:"65% berarti 65/100, yaitu 0,65."},
+      {en:"Convert 7/10 to a percent.", id:"Ubah 7/10 menjadi persen.", opts:["70%","7%","17%","700%"], correct:0,
+       wEn:"7/10 = 70/100 = 70%.", wId:"7/10 = 70/100 = 70%."},
+      {en:"A class completed 0.45 of a project. What fraction and percent is this?", id:"Sebuah kelas menyelesaikan 0,45 dari sebuah proyek. Berapa pecahan dan persennya?", opts:["9/20 and 45%","45/10 and 4.5%","4/5 and 40%","9/10 and 90%"], correct:0,
+       wEn:"0.45 = 45/100 = 9/20, and as a percent it is 45%.", wId:"0,45 = 45/100 = 9/20, dan sebagai persen adalah 45%."}
+    ]
+  },
+  {
+    title_en: "Section 3: Decimal Place Value",
+    title_id: "Bagian 3: Nilai Tempat Desimal",
+    before_en: "Each digit has a value based on its position. To the right of the decimal point, the places are tenths, hundredths, and thousandths. Look carefully at both the place name and the digit's value.",
+    before_id: "Setiap angka memiliki nilai berdasarkan posisinya. Di sebelah kanan titik desimal, tempatnya adalah persepuluhan, perseratusan, dan perseribuan. Perhatikan baik-baik nama tempat dan nilai angkanya.",
+    questions: [
+      {en:"In the number 4,735.735, what is the value of the digit 7 in the tenths place?", id:"Pada bilangan 4.735,735, berapa nilai angka 7 di tempat persepuluhan?", opts:["0.7","7","70","0.07"], correct:0,
+       wEn:"The 7 in the tenths place has a value of 7 tenths = 0.7.", wId:"Angka 7 di tempat persepuluhan bernilai 7 persepuluhan = 0,7."},
+      {en:"In 8.406, which digit is in the hundredths place?", id:"Pada 8,406, angka mana yang berada di tempat perseratusan?", opts:["0","4","6","8"], correct:0,
+       wEn:"The hundredths place is the second digit after the decimal point. In 8.406, that digit is 0.", wId:"Tempat perseratusan adalah angka kedua setelah titik desimal. Pada 8,406, angka itu adalah 0."},
+      {en:"What is the value of the digit 6 in 3.268?", id:"Berapa nilai angka 6 pada 3,268?", opts:["0.06","6","0.6","0.006"], correct:0,
+       wEn:"The 6 is in the hundredths place, so its value is 6 hundredths = 0.06.", wId:"Angka 6 berada di tempat perseratusan, jadi nilainya 6 perseratusan = 0,06."},
+      {en:"Which place is the digit 5 in 12.057?", id:"Angka 5 pada 12,057 berada di tempat apa?", opts:["Tenths / Persepuluhan","Hundredths / Perseratusan","Thousandths / Perseribuan","Ones / Satuan"], correct:1,
+       wEn:"After the decimal point, 0 is tenths, 5 is hundredths, and 7 is thousandths.", wId:"Setelah titik desimal, 0 adalah persepuluhan, 5 adalah perseratusan, dan 7 adalah perseribuan."},
+      {en:"What decimal has 2 ones, 6 tenths, 5 hundredths, and 4 thousandths?", id:"Desimal apa yang memiliki 2 satuan, 6 persepuluhan, 5 perseratusan, dan 4 perseribuan?", opts:["2.654","26.54","2.564","2.645"], correct:0,
+       wEn:"2 ones + 6 tenths + 5 hundredths + 4 thousandths = 2.654.", wId:"2 satuan + 6 persepuluhan + 5 perseratusan + 4 perseribuan = 2,654."}
+    ]
+  },
+  {
+    title_en: "Section 4: Expanded Form",
+    title_id: "Bagian 4: Bentuk Panjang",
+    before_en: "Expanded form shows the value of each digit separately. For decimals, write each digit using its place value: tenths, hundredths, and thousandths.",
+    before_id: "Bentuk panjang menunjukkan nilai setiap angka secara terpisah. Untuk desimal, tulis setiap angka sesuai nilai tempatnya: persepuluhan, perseratusan, dan perseribuan.",
+    questions: [
+      {en:"Write 4.27 in expanded form.", id:"Tulis 4,27 dalam bentuk panjang.", opts:["4 + 0.2 + 0.07","4 + 2 + 0.7","4 + 0.27","40 + 2 + 0.7"], correct:0,
+       wEn:"4 is ones, 2 is tenths, and 7 is hundredths.", wId:"4 adalah satuan, 2 adalah persepuluhan, dan 7 adalah perseratusan."},
+      {en:"Write 15.306 in expanded form.", id:"Tulis 15,306 dalam bentuk panjang.", opts:["10 + 5 + 0.3 + 0.006","1 + 5 + 0.3 + 0.06","10 + 5 + 0.3 + 0.06","15 + 0.3 + 0.06"], correct:0,
+       wEn:"The digits represent one ten, five ones, three tenths, and six thousandths.", wId:"Angka-angkanya mewakili satu puluhan, lima satuan, tiga persepuluhan, dan enam perseribuan."},
+      {en:"Which decimal is represented by 6 + 0.1 + 0.02 + 0.005?", id:"Desimal apa yang ditunjukkan oleh 6 + 0,1 + 0,02 + 0,005?", opts:["6.125","6.25","6.015","6.1025"], correct:0,
+       wEn:"Add the place values: 6 + 0.1 + 0.02 + 0.005 = 6.125.", wId:"Jumlahkan nilai tempatnya: 6 + 0,1 + 0,02 + 0,005 = 6,125."},
+      {en:"Write 23.708 in expanded form.", id:"Tulis 23,708 dalam bentuk panjang.", opts:["20 + 3 + 0.7 + 0.008","2 + 3 + 0.7 + 0.008","20 + 3 + 7 + 0.008","20 + 3 + 0.07 + 0.08"], correct:0,
+       wEn:"The 2 is tens, 3 is ones, 7 is tenths, and 8 is thousandths.", wId:"2 adalah puluhan, 3 adalah satuan, 7 adalah persepuluhan, dan 8 adalah perseribuan."},
+      {en:"Which expanded form represents 5.43?", id:"Bentuk panjang mana yang menunjukkan 5,43?", opts:["5 + 0.4 + 0.03","5 + 4 + 0.3","5 + 0.4 + 3","5 + 40 + 3"], correct:0,
+       wEn:"5 ones + 4 tenths + 3 hundredths = 5.43.", wId:"5 satuan + 4 persepuluhan + 3 perseratusan = 5,43."}
+    ]
+  },
+  {
+    title_en: "Section 5: Word Form",
+    title_id: "Bagian 5: Bentuk Kata",
+    before_en: "Read the whole-number part normally, then read the decimal part using its place value. For example, 0.35 is 'thirty-five hundredths' and 2.35 is 'two and thirty-five hundredths.' (These answers stay in English, since that's how the words are written.)",
+    before_id: "Baca bagian bilangan bulat seperti biasa, lalu baca bagian desimal sesuai nilai tempatnya. Contohnya, 0,35 dibaca 'thirty-five hundredths' dan 2,35 dibaca 'two and thirty-five hundredths'. (Jawabannya tetap dalam bahasa Inggris, karena itulah cara penulisan katanya.)",
+    questions: [
+      {en:"Write 0.6 in word form.", id:"Tulis 0,6 dalam bentuk kata.", opts:["six tenths","six hundredths","sixty tenths","six thousandths"], correct:0,
+       wEn:"There is one digit after the decimal, so the denominator is 10: six tenths.", wId:"Ada satu angka setelah titik desimal, jadi penyebutnya 10: 'six tenths'."},
+      {en:"Write 2.45 in word form.", id:"Tulis 2,45 dalam bentuk kata.", opts:["two and forty-five hundredths","two and forty-five tenths","twenty-four point five","two and four hundredths"], correct:0,
+       wEn:"Two is the whole-number part and 45 is hundredths.", wId:"Dua adalah bagian bilangan bulat dan 45 adalah perseratusan."},
+      {en:"Write 7.308 in word form.", id:"Tulis 7,308 dalam bentuk kata.", opts:["seven and three hundred eight thousandths","seven and thirty-eight hundredths","seven and three hundred eighty thousandths","seven point three zero eight"], correct:0,
+       wEn:"Three decimal places mean thousandths; 308 thousandths is 'three hundred eight thousandths.'", wId:"Tiga angka desimal berarti perseribuan; 308 perseribuan dibaca 'three hundred eight thousandths.'"},
+      {en:"Write 15.09 in word form.", id:"Tulis 15,09 dalam bentuk kata.", opts:["fifteen and nine hundredths","fifteen and nine tenths","fifteen and ninety hundredths","fifteen and nine thousandths"], correct:0,
+       wEn:"09 is nine hundredths, not nine tenths.", wId:"09 adalah sembilan perseratusan, bukan sembilan persepuluhan."},
+      {en:"Which decimal means 'four and one hundred twenty-five thousandths'?", id:"Desimal mana yang artinya 'four and one hundred twenty-five thousandths'?", opts:["4.125","4.0125","4.25","41.25"], correct:0,
+       wEn:"One hundred twenty-five thousandths is 0.125, so the number is 4.125.", wId:"Seratus dua puluh lima perseribuan adalah 0,125, jadi bilangannya adalah 4,125."}
+    ]
+  },
+  {
+    title_en: "Section 6: Equivalent Decimals",
+    title_id: "Bagian 6: Desimal yang Senilai",
+    before_en: "Adding zeros to the right of the last decimal digit does not change the value. For example, 0.5, 0.50, and 0.500 are equivalent decimals.",
+    before_id: "Menambahkan angka nol di sebelah kanan digit desimal terakhir tidak mengubah nilainya. Contohnya, 0,5, 0,50, dan 0,500 adalah desimal yang senilai.",
+    questions: [
+      {en:"Complete: 0.5 = ____ using two decimal places.", id:"Lengkapi: 0,5 = ____ dengan dua angka desimal.", opts:["0.50","0.05","0.500","5.0"], correct:0,
+       wEn:"A zero added to the right keeps the same value.", wId:"Menambahkan nol di sebelah kanan tidak mengubah nilainya."},
+      {en:"Complete: 0.70 = ____ using one decimal place.", id:"Lengkapi: 0,70 = ____ dengan satu angka desimal.", opts:["0.7","7.0","0.07","0.700"], correct:0,
+       wEn:"70 hundredths is the same amount as 7 tenths.", wId:"70 perseratusan sama nilainya dengan 7 persepuluhan."},
+      {en:"Are 0.4 and 0.40 equivalent?", id:"Apakah 0,4 dan 0,40 senilai?", opts:["Yes / Ya","No / Tidak"], correct:0,
+       wEn:"0.4 = 4/10 and 0.40 = 40/100; both equal the same amount.", wId:"0,4 = 4/10 dan 0,40 = 40/100; keduanya bernilai sama."},
+      {en:"Which decimal is equivalent to 2.5?", id:"Desimal mana yang senilai dengan 2,5?", opts:["2.05","2.50","25.0","0.25"], correct:1,
+       wEn:"Adding a zero after 2.5 gives 2.50 without changing its value.", wId:"Menambahkan nol setelah 2,5 menghasilkan 2,50 tanpa mengubah nilainya."},
+      {en:"Which decimal is equivalent to 0.300?", id:"Desimal mana yang senilai dengan 0,300?", opts:["0.03","0.3","3.0","0.030"], correct:1,
+       wEn:"0.300 = 0.30 = 0.3.", wId:"0,300 = 0,30 = 0,3."}
+    ]
+  },
+  {
+    title_en: "Section 7: Comparing Decimals",
+    title_id: "Bagian 7: Membandingkan Desimal",
+    before_en: "When comparing decimals, line up the decimal points and compare digits from left to right. Adding zeros can make comparison easier: 0.7 = 0.70.",
+    before_id: "Saat membandingkan desimal, sejajarkan titik desimalnya lalu bandingkan angka dari kiri ke kanan. Menambahkan angka nol dapat mempermudah perbandingan: 0,7 = 0,70.",
+    questions: [
+      {en:"Which is greater: 0.7 or 0.65?", id:"Mana yang lebih besar: 0,7 atau 0,65?", opts:["0.7","0.65","They are equal / Sama besar"], correct:0,
+       wEn:"Write 0.7 as 0.70. Since 70 hundredths > 65 hundredths, 0.7 is greater.", wId:"Tulis 0,7 sebagai 0,70. Karena 70 perseratusan > 65 perseratusan, 0,7 lebih besar."},
+      {en:"Compare: 0.48 ___ 0.5", id:"Bandingkan: 0,48 ___ 0,5", opts:["<","=",">"], correct:0,
+       wEn:"0.5 = 0.50, and 0.48 < 0.50.", wId:"0,5 = 0,50, dan 0,48 < 0,50."},
+      {en:"Which is smaller: 2.35 or 2.305?", id:"Mana yang lebih kecil: 2,35 atau 2,305?", opts:["2.35","2.305","They are equal / Sama besar"], correct:1,
+       wEn:"Write 2.35 as 2.350. Then 2.305 < 2.350.", wId:"Tulis 2,35 sebagai 2,350. Maka 2,305 < 2,350."},
+      {en:"Arrange from smallest to largest: 0.8, 0.08, 0.88, 0.808.", id:"Urutkan dari terkecil ke terbesar: 0,8, 0,08, 0,88, 0,808.", opts:["0.08, 0.8, 0.808, 0.88","0.8, 0.08, 0.88, 0.808","0.08, 0.8, 0.88, 0.808","0.88, 0.808, 0.8, 0.08"], correct:0,
+       wEn:"Write them as 0.080, 0.800, 0.808, and 0.880 to compare place values.", wId:"Tulis sebagai 0,080, 0,800, 0,808, dan 0,880 untuk membandingkan nilai tempatnya."},
+      {en:"A 10×10 grid shows 56 shaded squares. Another shows 60 shaded squares. Which decimal is greater?", id:"Kotak 10×10 pertama menunjukkan 56 kotak diarsir. Kotak kedua menunjukkan 60 kotak diarsir. Desimal mana yang lebih besar?", opts:["0.60","0.56","They are equal / Sama besar"], correct:0,
+       wEn:"60 hundredths is greater than 56 hundredths, so 0.60 (equal to 0.6) is greater.", wId:"60 perseratusan lebih besar dari 56 perseratusan, jadi 0,60 (sama dengan 0,6) lebih besar."}
+    ]
+  },
+  {
+    title_en: "Section 8: Rounding Decimals",
+    title_id: "Bagian 8: Pembulatan Desimal",
+    before_en: "To round, find the place you are rounding to, then look at the digit immediately to its right. If that digit is 5 or more, round up. If it is 4 or less, keep the rounding digit the same.",
+    before_id: "Untuk membulatkan, temukan tempat yang dituju, lalu lihat angka tepat di sebelah kanannya. Jika angka itu 5 atau lebih, bulatkan ke atas. Jika 4 atau kurang, biarkan angka tetap sama.",
+    questions: [
+      {en:"Round 4.67 to the nearest whole number.", id:"Bulatkan 4,67 ke bilangan bulat terdekat.", opts:["5","4","4.7","4.6"], correct:0,
+       wEn:"The tenths digit is 6, so 4 rounds up to 5.", wId:"Angka persepuluhan adalah 6, jadi 4 dibulatkan ke atas menjadi 5."},
+      {en:"Round 8.34 to the nearest tenth.", id:"Bulatkan 8,34 ke persepuluhan terdekat.", opts:["8.3","8.4","8","8.35"], correct:0,
+       wEn:"The hundredths digit is 4, so the tenths digit stays 3.", wId:"Angka perseratusan adalah 4, jadi angka persepuluhan tetap 3."},
+      {en:"Round 5.786 to the nearest hundredth.", id:"Bulatkan 5,786 ke perseratusan terdekat.", opts:["5.79","5.78","5.8","5.7"], correct:0,
+       wEn:"The thousandths digit is 6, so the hundredths digit 8 rounds up to 9.", wId:"Angka perseribuan adalah 6, jadi angka perseratusan 8 dibulatkan ke atas menjadi 9."},
+      {en:"Round 12.495 to the nearest tenth.", id:"Bulatkan 12,495 ke persepuluhan terdekat.", opts:["12.5","12.4","12.49","12.50"], correct:0,
+       wEn:"The hundredths digit is 9, so the tenths digit rounds up.", wId:"Angka perseratusan adalah 9, jadi angka persepuluhan dibulatkan ke atas."},
+      {en:"A bottle contains 3.764 litres. Round the amount to the nearest hundredth.", id:"Sebuah botol berisi 3,764 liter. Bulatkan jumlahnya ke perseratusan terdekat.", opts:["3.76 litres","3.77 litres","3.8 litres","3.7 litres"], correct:0,
+       wEn:"The thousandths digit is 4, so the hundredths digit remains 6.", wId:"Angka perseribuan adalah 4, jadi angka perseratusan tetap 6."}
+    ]
+  }
+];
+
+const correctMsgs = [
+  {en:"Awesome!", id:"Keren!"},
+  {en:"Great job!", id:"Kerja bagus!"},
+  {en:"You're a decimal star!", id:"Kamu bintang desimal!"},
+  {en:"Nailed it!", id:"Tepat sekali!"},
+  {en:"Fantastic!", id:"Luar biasa!"},
+  {en:"Sharp thinking!", id:"Pemikiran yang tajam!"}
+];
+const wrongMsgs = [
+  {en:"Not quite — here's why:", id:"Belum tepat — ini alasannya:"},
+  {en:"Good try! Here's the explanation:", id:"Usaha bagus! Ini penjelasannya:"},
+  {en:"So close! Let's learn from this one:", id:"Hampir! Yuk pelajari yang ini:"},
+  {en:"Keep going, mistakes help us learn:", id:"Terus semangat, kesalahan membantu kita belajar:"}
+];
+
+/* ===================== STATE ===================== */
+let flatQuestions = [];
+sections.forEach((s, si) => s.questions.forEach((q, qi) => flatQuestions.push({...q, sectionIndex:si, isFirstInSection: qi===0})));
+
+let current = 0;
+let score = 0;
+let streak = 0;
+let bestStreak = 0;
+
+/* ===================== AUDIO ===================== */
+let audioCtx;
+function ensureAudio(){
+  if(!audioCtx){
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if(audioCtx.state === 'suspended'){ audioCtx.resume(); }
+}
+function tone(freq, start, dur, type, gain){
+  type = type || 'sine';
+  gain = gain === undefined ? 0.2 : gain;
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.type = type;
+  o.frequency.value = freq;
+  o.connect(g);
+  g.connect(audioCtx.destination);
+  const t0 = audioCtx.currentTime + start;
+  g.gain.setValueAtTime(gain, t0);
+  g.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
+  o.start(t0);
+  o.stop(t0 + dur + 0.02);
+}
+function playCorrect(){
+  ensureAudio();
+  tone(523.25, 0, 0.14, 'triangle', 0.22);
+  tone(659.25, 0.10, 0.14, 'triangle', 0.22);
+  tone(783.99, 0.20, 0.22, 'triangle', 0.24);
+}
+function playWrong(){
+  ensureAudio();
+  tone(233.08, 0, 0.18, 'sawtooth', 0.14);
+  tone(174.61, 0.14, 0.26, 'sawtooth', 0.14);
+}
+function playClick(){
+  ensureAudio();
+  tone(440, 0, 0.06, 'triangle', 0.10);
+}
+function playStreak(){
+  ensureAudio();
+  [659.25, 783.99, 987.77].forEach((f,i)=> tone(f, i*0.09, 0.16, 'triangle', 0.2));
+}
+function playWin(){
+  ensureAudio();
+  [523.25, 659.25, 783.99, 1046.50, 1318.51].forEach((f,i)=> tone(f, i*0.14, 0.22, 'triangle', 0.22));
+}
+
+/* ===================== CONFETTI ===================== */
+const confettiColors = ['#F2C14E','#F2664B','#59B98A','#FFFFFF','#147069'];
+function burstConfetti(n){
+  n = n || 24;
+  for(let i=0;i<n;i++){
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.style.left = Math.random()*100 + 'vw';
+    el.style.background = confettiColors[Math.floor(Math.random()*confettiColors.length)];
+    const dur = 1.6 + Math.random()*1.2;
+    el.style.animationDuration = dur + 's';
+    el.style.opacity = 0.85;
+    document.body.appendChild(el);
+    setTimeout(()=> el.remove(), dur*1000 + 100);
+  }
+}
+
+/* ===================== DOM ===================== */
+const screenStart = document.getElementById('screen-start');
+const screenIntro = document.getElementById('screen-intro');
+const screenQuestion = document.getElementById('screen-question');
+const screenEnd = document.getElementById('screen-end');
+const trailEl = document.getElementById('trail');
+const progressNote = document.getElementById('progress-note');
+
+function showScreen(el){
+  [screenStart, screenIntro, screenQuestion, screenEnd].forEach(s => s.classList.add('hidden'));
+  el.classList.remove('hidden');
+}
+
+function buildTrail(activeSectionIndex){
+  trailEl.innerHTML = '';
+  sections.forEach((s, i) => {
+    if(i>0){
+      const seg = document.createElement('div');
+      seg.className = 'seg' + (i <= activeSectionIndex ? ' done' : '');
+      trailEl.appendChild(seg);
+    }
+    const g = document.createElement('div');
+    g.className = 'gem' + (i < activeSectionIndex ? ' done' : (i === activeSectionIndex ? ' current' : ''));
+    g.innerHTML = '<span>' + (i+1) + '</span>';
+    trailEl.appendChild(g);
+  });
+}
+
+/* ===================== FLOW ===================== */
+function startQuest(){
+  ensureAudio();
+  playClick();
+  current = 0;
+  score = 0;
+  streak = 0;
+  bestStreak = 0;
+  showSectionIntro(0);
+}
+
+function showSectionIntro(sectionIndex){
+  buildTrail(sectionIndex);
+  const s = sections[sectionIndex];
+  document.getElementById('intro-badge').textContent = 'Section ' + (sectionIndex+1) + ' / Bagian ' + (sectionIndex+1);
+  document.getElementById('intro-title-en').textContent = s.title_en;
+  document.getElementById('intro-title-id').textContent = s.title_id;
+  document.getElementById('intro-body-en').textContent = s.before_en;
+  document.getElementById('intro-body-id').textContent = s.before_id;
+  progressNote.textContent = '';
+  showScreen(screenIntro);
+}
+
+document.getElementById('btn-continue').addEventListener('click', () => {
+  playClick();
+  renderQuestion();
+});
+
+function renderQuestion(){
+  const q = flatQuestions[current];
+  buildTrail(q.sectionIndex);
+  document.getElementById('q-section-label').textContent = sections[q.sectionIndex].title_en.replace('Section '+(q.sectionIndex+1)+': ','');
+  document.getElementById('q-text-en').textContent = (current+1) + '. ' + q.en;
+  document.getElementById('q-text-id').textContent = q.id;
+  document.getElementById('status-progress').textContent = 'Question / Soal ' + (current+1) + '/40';
+  document.getElementById('status-score').textContent = '⭐ ' + score;
+
+  const optsWrap = document.getElementById('q-options');
+  optsWrap.innerHTML = '';
+  const letters = ['A','B','C','D'];
+  q.opts.forEach((opt, idx) => {
+    const b = document.createElement('button');
+    b.className = 'opt';
+    b.innerHTML = '<span class="letter">' + letters[idx] + '</span>' + opt;
+    b.addEventListener('click', () => selectAnswer(idx));
+    optsWrap.appendChild(b);
+  });
+
+  const fb = document.getElementById('q-feedback');
+  fb.className = 'feedback';
+  document.getElementById('btn-next').classList.add('hidden');
+  document.getElementById('streak-note').textContent = '';
+  progressNote.textContent = 'Section ' + (q.sectionIndex+1) + ' of 8 · Bagian ' + (q.sectionIndex+1) + ' dari 8';
+
+  showScreen(screenQuestion);
+}
+
+function selectAnswer(idx){
+  const q = flatQuestions[current];
+  const buttons = document.querySelectorAll('#q-options .opt');
+  buttons.forEach(b => b.disabled = true);
+
+  const isCorrect = idx === q.correct;
+
+  if(isCorrect){
+    buttons[idx].classList.add('correct');
+    score++;
+    streak++;
+    bestStreak = Math.max(bestStreak, streak);
+    playCorrect();
+    burstConfetti(18);
+  } else {
+    buttons[idx].classList.add('wrong');
+    buttons[q.correct].classList.add('correct');
+    streak = 0;
+    playWrong();
+  }
+
+  const fb = document.getElementById('q-feedback');
+  fb.classList.add('show', isCorrect ? 'ok' : 'no');
+  const msgPool = isCorrect ? correctMsgs : wrongMsgs;
+  const msg = msgPool[Math.floor(Math.random()*msgPool.length)];
+  document.getElementById('fb-headline').textContent = (isCorrect ? '✅ ' : '💡 ') + msg.en + ' / ' + msg.id;
+  document.getElementById('fb-why-en').textContent = q.wEn;
+  document.getElementById('fb-why-id').textContent = q.wId;
+
+  const streakNote = document.getElementById('streak-note');
+  if(isCorrect && streak >= 3){
+    streakNote.textContent = '🔥 ' + streak + ' in a row! / ' + streak + ' kali beruntun!';
+    playStreak();
+  } else {
+    streakNote.textContent = '';
+  }
+
+  document.getElementById('status-score').textContent = '⭐ ' + score;
+  document.getElementById('btn-next').classList.remove('hidden');
+}
+
+document.getElementById('btn-next').addEventListener('click', () => {
+  playClick();
+  current++;
+  if(current >= flatQuestions.length){
+    showEnd();
+    return;
+  }
+  const nextQ = flatQuestions[current];
+  if(nextQ.isFirstInSection){
+    showSectionIntro(nextQ.sectionIndex);
+  } else {
+    renderQuestion();
+  }
+});
+
+function showEnd(){
+  buildTrail(sections.length);
+  const pct = Math.round((score/flatQuestions.length)*100);
+  document.getElementById('end-score').textContent = score + ' / ' + flatQuestions.length;
+
+  let stars, emoji, msgEn, msgId;
+  if(pct >= 90){ stars='⭐⭐⭐'; emoji='🏆'; msgEn="Incredible! You found the whole decimal treasure!"; msgId="Luar biasa! Kamu menemukan seluruh harta karun desimal!"; }
+  else if(pct >= 70){ stars='⭐⭐'; emoji='💎'; msgEn="Great work, explorer! You know decimals really well."; msgId="Kerja bagus, penjelajah! Kamu sudah paham desimal dengan baik."; }
+  else if(pct >= 50){ stars='⭐'; emoji='🧭'; msgEn="Nice effort! A little more practice and you'll be a decimal master."; msgId="Usaha yang bagus! Sedikit latihan lagi dan kamu akan jadi ahli desimal."; }
+  else { stars='🌱'; emoji='🗺️'; msgEn="Good start! Every explorer learns by trying. Play again to sharpen your skills."; msgId="Awal yang baik! Setiap penjelajah belajar dari mencoba. Main lagi untuk mengasah kemampuanmu."; }
+
+  document.getElementById('end-emoji').textContent = emoji;
+  document.getElementById('end-stars').textContent = stars;
+  document.getElementById('end-msg-en').textContent = msgEn + ' Best streak: ' + bestStreak + '.';
+  document.getElementById('end-msg-id').textContent = msgId + ' Rekor beruntun: ' + bestStreak + '.';
+
+  progressNote.textContent = '';
+  showScreen(screenEnd);
+  playWin();
+  burstConfetti(60);
+}
+
+document.getElementById('btn-start').addEventListener('click', startQuest);
+document.getElementById('btn-replay').addEventListener('click', startQuest);
+
+/* initial trail render */
+buildTrail(-1);
+</script>
+</body>
+</html>
